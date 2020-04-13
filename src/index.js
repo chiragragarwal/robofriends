@@ -1,8 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
-import { searchRobots } from './reducers';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { createLogger } from 'redux-logger';
+import thunkMiddleware from 'redux-thunk';
+
+import { searchRobots, requestRobots } from './reducers';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import 'tachyons';
@@ -12,7 +15,9 @@ import App from './containers/App';
 // Note: Ideally it should have the main root reducer passed in,
 //       but in this case we have just one reducer - searchRobots
 // const store = createStore(reducerRoot)
-const store = createStore(searchRobots)
+const logger = createLogger()
+const rootReducer = combineReducers({ searchRobots, requestRobots })
+const store = createStore(rootReducer, applyMiddleware(thunkMiddleware, logger))
 
 ReactDOM.render(
   <React.StrictMode>

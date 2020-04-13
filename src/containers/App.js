@@ -7,18 +7,19 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import './App.css';
 
 import { connect } from 'react-redux';
-import { setSearchField } from '../actions';
+import { setSearchField, requestRobotsAction } from '../actions';
 
 class App extends React.Component {
 
-    constructor(){
-        // console.log('constructor');
-        super();
-        this.state = {
-            robots: []
-            // searchfield: ''
-        }
-    }
+    // --- The constructor is no longer needed as we're now getting the initial state using Redux ---
+    // constructor(){
+    //     // console.log('constructor');
+    //     super();
+    //     this.state = {
+    //         robots: []
+    //         // searchfield: ''
+    //     }
+    // }
 
     // onSearchChange = (event) => {
     //     this.setState({ searchfield: event.target.value })
@@ -30,24 +31,29 @@ class App extends React.Component {
 
     componentDidMount(){
         // console.log(this.props.store);
-        fetch('https://jsonplaceholder.typicode.com/users')
-        .then(response => response.json())
-        .then(users => this.setState({robots: users}))
+
+        // ---- The code below was replaced by the action requestRobotsAction which is available as 
+        // the prop this.props.onRequestRobots ----
+        // fetch('https://jsonplaceholder.typicode.com/users')
+        // .then(response => response.json())
+        // .then(users => this.setState({robots: users}))
+        this.props.onRequestRobots()
     }
 
     render(){
         // console.log('render');
 
         // Destructuring the robots list and searchfield to keep it clean
-        const {robots} = this.state;
+        // const {robots} = this.state;
+        const { robots, searchField, isPending } = this.props;
 
         // Filter the robots based on the searchfield
         const filteredRobots = robots.filter(item => {
-            return item.name.toLowerCase().includes(this.props.searchField.toLowerCase())
+            return item.name.toLowerCase().includes(searchField.toLowerCase())
         })
         // console.log(filteredRobots);
 
-        if (robots.length === 0) {
+        if (isPending) {
             return <h1 className="tc">Loading...</h1>
         }
         else {
@@ -68,14 +74,20 @@ class App extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        searchField: state.searchField
+        searchField: state.searchRobots.searchField,
+        robots: state.requestRobots.robots,
+        isPending: state.requestRobots.isPending,
+        error: state.requestRobots.error
     }
 }
 
 const mapDisapatchToProps = (dispatch) => {
     return {
         // prop: (param) => dispatch(action(param))
-        onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+        onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+
+        // Use the async action like a regular action. redux-thunk will take care of it
+        onRequestRobots: () => dispatch(requestRobotsAction())
     }
 }
 
