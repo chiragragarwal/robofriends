@@ -6,27 +6,30 @@ import ErrorBoundary from '../components/ErrorBoundary';
 // import { robots } from './robots';
 import './App.css';
 
+import { connect } from 'react-redux';
+import { setSearchField } from '../actions';
+
 class App extends React.Component {
 
     constructor(){
         // console.log('constructor');
         super();
         this.state = {
-            robots: [],
-            searchfield: ''
+            robots: []
+            // searchfield: ''
         }
     }
 
-    onSearchChange = (event) => {
-        this.setState({ searchfield: event.target.value })
-        // Note: ^^ the above change does not take place immediately at this point.
-        // It probably does it after the function is executed. 
-        // console.log(this.state.searchfield);
+    // onSearchChange = (event) => {
+    //     this.setState({ searchfield: event.target.value })
+    //     // Note: ^^ the above change does not take place immediately at this point.
+    //     // It probably does it after the function is executed. 
+    //     // console.log(this.state.searchfield);
         
-    }
+    // }
 
     componentDidMount(){
-        // console.log('componentDidMount');
+        // console.log(this.props.store);
         fetch('https://jsonplaceholder.typicode.com/users')
         .then(response => response.json())
         .then(users => this.setState({robots: users}))
@@ -36,11 +39,11 @@ class App extends React.Component {
         // console.log('render');
 
         // Destructuring the robots list and searchfield to keep it clean
-        const {robots, searchfield} = this.state;
+        const {robots} = this.state;
 
         // Filter the robots based on the searchfield
         const filteredRobots = robots.filter(item => {
-            return item.name.toLowerCase().includes(searchfield.toLowerCase())
+            return item.name.toLowerCase().includes(this.props.searchField.toLowerCase())
         })
         // console.log(filteredRobots);
 
@@ -51,7 +54,7 @@ class App extends React.Component {
             return(
                 <div className="tc">
                     <h1>RoboFriends</h1>
-                    <SearchBox searchChange={this.onSearchChange}/>
+                    <SearchBox searchChange={this.props.onSearchChange}/>
                     <Scroll>
                         <ErrorBoundary>
                             <CardList robots={filteredRobots}/>
@@ -63,4 +66,17 @@ class App extends React.Component {
     }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+    return {
+        searchField: state.searchField
+    }
+}
+
+const mapDisapatchToProps = (dispatch) => {
+    return {
+        // prop: (param) => dispatch(action(param))
+        onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    }
+}
+
+export default connect(mapStateToProps, mapDisapatchToProps)(App);
